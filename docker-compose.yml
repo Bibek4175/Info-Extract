@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    volumes:
+      - ./app:/HelloWorld/app
+    ports:
+      - 8001:8001
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres
+    ports:
+      - "5433:5432" 
+    volumes:
+      - ./ingest_data.py:/HelloWorld/ingest_data.py
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER} 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} 
+
+  ingest:
+    build: .
+    depends_on:
+      - postgres
+
+    env_file:
+      - ./.env
+    volumes:
+      - ./ingest_data.py:/HelloWorld/ingest_data.py
+    command: python /HelloWorld/ingest_data.py
+  redis:
+    image: redis 
+    ports:
+      - "6379:6379"  
+
